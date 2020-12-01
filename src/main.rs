@@ -7,9 +7,11 @@ fn main() {
         let values: Vec<i32> = lines.map(|line| line.unwrap().parse::<i32>().unwrap()).collect();
         for x in &values {
             for y in &values {
-                if x + y == 2020 {
-                    println!("{}", x * y);
-                    return;
+                for z in &values {
+                    if x + y + z == 2020 {
+                        println!("{}", x * y * z);
+                        return;
+                    }
                 }
             }
         }
