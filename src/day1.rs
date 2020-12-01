@@ -32,7 +32,7 @@ where
         for inner in &values {
             let inner_target = outer_target - inner;
             if values.contains(&inner_target) {
-                return Some(outer * inner * inner_target)
+                return Some(outer * inner * inner_target);
             }
         }
     }
