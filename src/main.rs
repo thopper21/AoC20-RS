@@ -1,27 +1,33 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
+mod day1;
 
-fn main() {
-    if let Ok(lines) = read_lines("input/Day1.txt") {
-        let values: Vec<i32> = lines.map(|line| line.unwrap().parse::<i32>().unwrap()).collect();
-        for x in &values {
-            for y in &values {
-                for z in &values {
-                    if x + y + z == 2020 {
-                        println!("{}", x * y * z);
-                        return;
-                    }
-                }
-            }
-        }
-    }
+#[allow(dead_code)]
+enum Day {
+    One
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+#[allow(dead_code)]
+enum Part {
+    One,
+    Two
+}
+
+fn run(day: Day, part: Part) -> String {
+    match day {
+        Day::One => {
+            if let Ok(lines) = day1::lines() {
+                let input = lines.map(|line| line.unwrap());
+                let result = match part {
+                    Part::One => day1::part1(input),
+                    Part::Two => day1::part2(input)
+                };
+                return result.unwrap().to_string();
+            }
+        } 
+    }
+
+    return String::new();
+}
+
+fn main() {
+    println!("{}", run(Day::One, Part::One));
 }
