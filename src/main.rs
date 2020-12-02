@@ -3,6 +3,7 @@ mod day1;
 #[allow(dead_code)]
 enum Day {
     One,
+    Two,
 }
 
 #[allow(dead_code)]
@@ -22,6 +23,9 @@ fn run(day: Day, part: Part) -> String {
                 };
                 return result.unwrap().to_string();
             }
+        },
+        Day::Two => {
+            return String::new();
         }
     }
 
