@@ -1,4 +1,5 @@
 mod day1;
+mod day2;
 
 #[allow(dead_code)]
 enum Day {
@@ -21,13 +22,18 @@ fn run(day: Day, part: Part) -> String {
                 Part::Two => day1::part2(input),
             };
             return result.unwrap().to_string();
-        },
+        }
         Day::Two => {
-            return String::new();
+            let input = day2::lines().unwrap().map(|line| line.unwrap());
+            let result = match part {
+                Part::One => day2::part1(input),
+                Part::Two => 42,
+            };
+            return result.to_string();
         }
     }
 }
 
 fn main() {
-    println!("{}", run(Day::One, Part::Two));
+    println!("{}", run(Day::Two, Part::One));
 }
