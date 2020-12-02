@@ -27,7 +27,7 @@ fn run(day: Day, part: Part) -> String {
             let input = day2::lines().unwrap().map(|line| line.unwrap());
             let result = match part {
                 Part::One => day2::part1(input),
-                Part::Two => 42,
+                Part::Two => day2::part2(input),
             };
             return result.to_string();
         }
@@ -35,5 +35,5 @@ fn run(day: Day, part: Part) -> String {
 }
 
 fn main() {
-    println!("{}", run(Day::Two, Part::One));
+    println!("{}", run(Day::Two, Part::Two));
 }

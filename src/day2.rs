@@ -32,11 +32,19 @@ fn parse_input(line: String) -> Input {
     };
 }
 
-fn validate_password(input: &Input) -> bool {
+fn validate_password1(input: &Input) -> bool {
     let password = &input.password;
     let constraint = &input.constraint;
     let counter_letters = password.chars().filter(|&c| c == constraint.letter).count();
     return constraint.min <= counter_letters && counter_letters <= constraint.max;
+}
+
+fn validate_password2(input: &Input) -> bool {
+    let password = &input.password;
+    let constraint = &input.constraint;
+
+    return (password.chars().nth(constraint.min - 1).unwrap() == constraint.letter)
+        ^ (password.chars().nth(constraint.max - 1).unwrap() == constraint.letter);
 }
 
 pub fn lines() -> io::Result<io::Lines<io::BufReader<File>>> {
@@ -48,5 +56,12 @@ pub fn part1<I>(input: I) -> usize
 where
     I: Iterator<Item = String>,
 {
-    return input.map(parse_input).filter(validate_password).count();
+    return input.map(parse_input).filter(validate_password1).count();
+}
+
+pub fn part2<I>(input: I) -> usize
+where
+    I: Iterator<Item = String>,
+{
+    return input.map(parse_input).filter(validate_password2).count();
 }
