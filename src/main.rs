@@ -15,21 +15,17 @@ enum Part {
 fn run(day: Day, part: Part) -> String {
     match day {
         Day::One => {
-            if let Ok(lines) = day1::lines() {
-                let input = lines.map(|line| line.unwrap());
-                let result = match part {
-                    Part::One => day1::part1(input),
-                    Part::Two => day1::part2(input),
-                };
-                return result.unwrap().to_string();
-            }
+            let input = day1::lines().unwrap().map(|line| line.unwrap());
+            let result = match part {
+                Part::One => day1::part1(input),
+                Part::Two => day1::part2(input),
+            };
+            return result.unwrap().to_string();
         },
         Day::Two => {
             return String::new();
         }
     }
-
-    return String::new();
 }
 
 fn main() {
