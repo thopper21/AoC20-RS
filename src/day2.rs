@@ -53,22 +53,6 @@ fn parse_input(input: String) -> Input {
     return result;
 }
 
-// fn parse_input(line: String) -> Input {
-//     // {min}-{max} {letter}: {password}
-//     let re = Regex::new(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)$").unwrap();
-//     let captures = re.captures_iter(&line).next().unwrap();
-
-//     let min = captures[1].parse::<usize>().unwrap();
-//     let max = captures[2].parse::<usize>().unwrap();
-//     let letter = captures[3].chars().next().unwrap();
-//     let password = captures[4].to_string();
-
-//     return Input {
-//         constraint: PasswordConstraint { min, max, letter },
-//         password,
-//     };
-// }
-
 fn validate_password1(input: &Input) -> bool {
     let password = &input.password;
     let constraint = &input.constraint;
