@@ -31,11 +31,11 @@ fn run<I>(input: I, starts: Vec<Slope>) -> usize
 where
     I: Iterator<Item = String>,
 {
-    return input
+    input
         .fold(starts, |slopes, line| {
             let len = line.chars().count();
 
-            return slopes
+            slopes
                 .into_iter()
                 .map(|slope| {
                     let mut next = slope.clone();
@@ -51,14 +51,15 @@ where
                         next.x += next.dx;
                     }
                     next.y += 1;
-                    return next;
+
+                    next
                 })
-                .collect();
+                .collect()
         })
         .into_iter()
         .fold(1, |x, slope| {
             return x * slope.trees;
-        });
+        })
 }
 
 pub fn part1<I>(input: I) -> usize
