@@ -1,10 +1,12 @@
 mod day1;
 mod day2;
+mod day3;
 
 #[allow(dead_code)]
 enum Day {
     One,
     Two,
+    Three,
 }
 
 #[allow(dead_code)]
@@ -31,9 +33,17 @@ fn run(day: Day, part: Part) -> String {
             };
             return result.to_string();
         }
+        Day::Three => {
+            let input = day3::lines().unwrap().map(|line| line.unwrap());
+            let result = match part {
+                Part::One => day3::part1(input),
+                Part::Two => day3::part2(input),
+            };
+            return result.to_string();
+        }
     }
 }
 
 fn main() {
-    println!("{}", run(Day::Two, Part::Two));
+    println!("{}", run(Day::Three, Part::One));
 }
