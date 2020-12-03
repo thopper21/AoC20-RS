@@ -74,10 +74,7 @@ where
     I: Iterator<Item = String>,
     F: Fn(&Input) -> bool,
 {
-    return input
-        .map(parse_input)
-        .filter(validate)
-        .count();
+    return input.map(parse_input).filter(validate).count();
 }
 
 pub fn lines() -> io::Result<io::Lines<io::BufReader<File>>> {
