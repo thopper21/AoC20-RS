@@ -1,8 +1,15 @@
+extern crate nom;
 extern crate regex;
 
-use self::regex::Regex;
+use self::nom::{
+    bytes::complete::tag,
+    character::complete::{alpha1, anychar, digit1},
+    map, named, IResult,
+};
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::num::ParseIntError;
+use std::str::FromStr;
 
 struct PasswordConstraint {
     min: usize,
@@ -15,22 +22,52 @@ struct Input {
     constraint: PasswordConstraint,
 }
 
-fn parse_input(line: String) -> Input {
-    // {min}-{max} {letter}: password
-    let re = Regex::new(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)$").unwrap();
-    let captures = re.captures_iter(&line).next().unwrap();
+named!(size<&str, Result<usize, ParseIntError>>,
+    map!(digit1, FromStr::from_str)
+);
 
-    let min = captures[1].parse::<usize>().unwrap();
-    let max = captures[2].parse::<usize>().unwrap();
-    let letter = captures[3].chars().next().unwrap();
-    let password = captures[4].to_string();
+fn input_parser(input: &str) -> IResult<&str, Input> {
+    let (input, min_result) = size(input)?;
+    let (input, _) = tag("-")(input)?;
+    let (input, max_result) = size(input)?;
+    let (input, _) = tag(" ")(input)?;
+    let (input, letter) = anychar(input)?;
+    let (input, _) = tag(": ")(input)?;
+    let (input, password_str) = alpha1(input)?;
 
-    let constraint = PasswordConstraint { min, max, letter };
-    return Input {
-        constraint,
-        password,
-    };
+    let min = min_result.unwrap();
+    let max = max_result.unwrap();
+    let password = String::from(password_str);
+    return IResult::Ok((
+        input,
+        Input {
+            constraint: PasswordConstraint { min, max, letter },
+            password,
+        },
+    ));
 }
+
+fn parse_input(input: String) -> Input {
+    let (_, result) = input_parser(&input[..]).unwrap();
+
+    return result;
+}
+
+// fn parse_input(line: String) -> Input {
+//     // {min}-{max} {letter}: {password}
+//     let re = Regex::new(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)$").unwrap();
+//     let captures = re.captures_iter(&line).next().unwrap();
+
+//     let min = captures[1].parse::<usize>().unwrap();
+//     let max = captures[2].parse::<usize>().unwrap();
+//     let letter = captures[3].chars().next().unwrap();
+//     let password = captures[4].to_string();
+
+//     return Input {
+//         constraint: PasswordConstraint { min, max, letter },
+//         password,
+//     };
+// }
 
 fn validate_password1(input: &Input) -> bool {
     let password = &input.password;
@@ -51,9 +88,12 @@ fn validate_password2(input: &Input) -> bool {
 fn run<I, F>(input: I, validate: F) -> usize
 where
     I: Iterator<Item = String>,
-    F: Fn(&Input) -> bool
+    F: Fn(&Input) -> bool,
 {
-    return input.map(parse_input).filter(validate).count();
+    return input
+        .map(parse_input)
+        .filter(validate)
+        .count();
 }
 
 pub fn lines() -> io::Result<io::Lines<io::BufReader<File>>> {
