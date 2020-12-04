@@ -6,8 +6,6 @@ use self::nom::{
     character::complete::{alpha1, anychar, digit1},
     map, named, IResult,
 };
-use std::fs::File;
-use std::io::{self, BufRead};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -75,11 +73,6 @@ where
     F: Fn(&Input) -> bool,
 {
     return input.map(parse_input).filter(validate).count();
-}
-
-pub fn lines() -> io::Result<io::Lines<io::BufReader<File>>> {
-    let file = File::open("input/Day2.txt")?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 pub fn part1<I>(input: I) -> usize

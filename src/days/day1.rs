@@ -1,11 +1,3 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-
-pub fn lines() -> io::Result<io::Lines<io::BufReader<File>>> {
-    let file = File::open("input/Day1.txt")?;
-    Ok(io::BufReader::new(file).lines())
-}
-
 pub fn part1<I>(input: I) -> Option<i32>
 where
     I: Iterator<Item = String>,
