@@ -6,6 +6,7 @@ use self::nom::{
     character::complete::{alpha1, anychar, digit1},
     map, named, IResult,
 };
+use crate::day::Day;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -75,16 +76,20 @@ where
     return input.map(parse_input).filter(validate).count();
 }
 
-pub fn part1<I>(input: I) -> usize
-where
-    I: Iterator<Item = String>,
-{
-    return run(input, &validate_password1);
-}
+pub struct Day2;
 
-pub fn part2<I>(input: I) -> usize
-where
-    I: Iterator<Item = String>,
-{
-    return run(input, &validate_password2);
+impl Day<usize, usize> for Day2 {
+    fn part1<I>(input: I) -> usize
+    where
+        I: Iterator<Item = String>,
+    {
+        return run(input, &validate_password1);
+    }
+
+    fn part2<I>(input: I) -> usize
+    where
+        I: Iterator<Item = String>,
+    {
+        return run(input, &validate_password2);
+    }
 }

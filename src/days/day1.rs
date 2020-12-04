@@ -1,33 +1,39 @@
-pub fn part1<I>(input: I) -> Option<i32>
-where
-    I: Iterator<Item = String>,
-{
-    let values: std::collections::HashSet<i32> =
-        input.map(|line| line.parse::<i32>().unwrap()).collect();
-    for value in &values {
-        let target = 2020 - value;
-        if values.contains(&target) {
-            return Some(value * target);
-        }
-    }
-    return None;
-}
+use crate::day::Day;
 
-pub fn part2<I>(input: I) -> Option<i32>
-where
-    I: Iterator<Item = String>,
-{
-    let values: std::collections::HashSet<i32> =
-        input.map(|line| line.parse::<i32>().unwrap()).collect();
-    for outer in &values {
-        let outer_target = 2020 - outer;
-        for inner in &values {
-            let inner_target = outer_target - inner;
-            if values.contains(&inner_target) {
-                return Some(outer * inner * inner_target);
+pub struct Day1;
+
+impl Day<i32, i32> for Day1 {
+    fn part1<I>(input: I) -> i32
+    where
+        I: Iterator<Item = String>,
+    {
+        let values: std::collections::HashSet<i32> =
+            input.map(|line| line.parse::<i32>().unwrap()).collect();
+        for value in &values {
+            let target = 2020 - value;
+            if values.contains(&target) {
+                return value * target;
             }
         }
+        return 0;
     }
 
-    return None;
+    fn part2<I>(input: I) -> i32
+    where
+        I: Iterator<Item = String>,
+    {
+        let values: std::collections::HashSet<i32> =
+            input.map(|line| line.parse::<i32>().unwrap()).collect();
+        for outer in &values {
+            let outer_target = 2020 - outer;
+            for inner in &values {
+                let inner_target = outer_target - inner;
+                if values.contains(&inner_target) {
+                    return outer * inner * inner_target;
+                }
+            }
+        }
+
+        return 0;
+    }
 }

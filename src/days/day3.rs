@@ -1,3 +1,5 @@
+use crate::day::Day;
+
 #[derive(Clone)]
 struct Slope {
     dx: usize,
@@ -54,25 +56,29 @@ where
         })
 }
 
-pub fn part1<I>(input: I) -> usize
-where
-    I: Iterator<Item = String>,
-{
-    run(input, vec![Slope::new(3, 1)])
-}
+pub struct Day3;
 
-pub fn part2<I>(input: I) -> usize
-where
-    I: Iterator<Item = String>,
-{
-    run(
-        input,
-        vec![
-            Slope::new(1, 1),
-            Slope::new(3, 1),
-            Slope::new(5, 1),
-            Slope::new(7, 1),
-            Slope::new(1, 2),
-        ],
-    )
+impl Day<usize, usize> for Day3 {
+    fn part1<I>(input: I) -> usize
+    where
+        I: Iterator<Item = String>,
+    {
+        run(input, vec![Slope::new(3, 1)])
+    }
+
+    fn part2<I>(input: I) -> usize
+    where
+        I: Iterator<Item = String>,
+    {
+        run(
+            input,
+            vec![
+                Slope::new(1, 1),
+                Slope::new(3, 1),
+                Slope::new(5, 1),
+                Slope::new(7, 1),
+                Slope::new(1, 2),
+            ],
+        )
+    }
 }
