@@ -78,13 +78,17 @@ where
 
 pub struct Day2;
 
-impl Day<usize, usize> for Day2 {
+impl Day for Day2 {
+    type T1 = usize;
+
     fn part1<I>(input: I) -> usize
     where
         I: Iterator<Item = String>,
     {
         return run(input, &validate_password1);
     }
+
+    type T2 = usize;
 
     fn part2<I>(input: I) -> usize
     where

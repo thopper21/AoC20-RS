@@ -58,7 +58,9 @@ where
 
 pub struct Day3;
 
-impl Day<usize, usize> for Day3 {
+impl Day for Day3 {
+    type T1 = usize;
+
     fn part1<I>(input: I) -> usize
     where
         I: Iterator<Item = String>,
@@ -66,6 +68,7 @@ impl Day<usize, usize> for Day3 {
         run(input, vec![Slope::new(3, 1)])
     }
 
+    type T2 = usize;
     fn part2<I>(input: I) -> usize
     where
         I: Iterator<Item = String>,

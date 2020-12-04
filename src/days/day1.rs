@@ -2,7 +2,8 @@ use crate::day::Day;
 
 pub struct Day1;
 
-impl Day<i32, i32> for Day1 {
+impl Day for Day1 {
+    type T1 = i32;
     fn part1<I>(input: I) -> i32
     where
         I: Iterator<Item = String>,
@@ -18,6 +19,7 @@ impl Day<i32, i32> for Day1 {
         return 0;
     }
 
+    type T2 = i32;
     fn part2<I>(input: I) -> i32
     where
         I: Iterator<Item = String>,
