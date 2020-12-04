@@ -1,7 +1,7 @@
 mod days;
 mod util;
 
-use days::{*};
+use days::*;
 use util::file;
 
 #[allow(dead_code)]
