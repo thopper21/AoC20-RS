@@ -1,6 +1,6 @@
-mod day1;
-mod day2;
-mod day3;
+mod days;
+
+use days::{*};
 
 #[allow(dead_code)]
 enum Day {
