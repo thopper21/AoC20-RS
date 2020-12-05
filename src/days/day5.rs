@@ -63,10 +63,9 @@ impl Day for Day5 {
 
         // Infinite range but we just want the first one satisfying these conditions
         (1..)
-            .filter(|i| {
+            .find(|i| {
                 !seat_ids.contains(&i) && seat_ids.contains(&(i - 1)) && seat_ids.contains(&(i + 1))
             })
-            .next()
             .unwrap()
     }
 }
