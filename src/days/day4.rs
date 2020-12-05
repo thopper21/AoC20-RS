@@ -99,7 +99,7 @@ where
         }
     }
 
-    if is_complete(&keys) {
+    if pred(&keys) {
         result += 1;
     }
 
