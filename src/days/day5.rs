@@ -14,7 +14,7 @@ fn to_seat_id(line: String) -> u64 {
             'L' => 0,
             _ => panic!("Unexpected character"),
         };
-        id = 2*id + value;
+        id = 2 * id + value;
     }
 
     id
