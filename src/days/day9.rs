@@ -21,19 +21,12 @@ impl Day for Day9 {
         loop {
             let next_value = values.next().unwrap();
 
-            let mut found = false;
-            for i in 0..window_size {
-                for j in (i+1)..window_size {
-                    if window[i] + window[j] == next_value {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if found {
-                    break;
-                }
-            }
+            let found = window
+                .iter()
+                .enumerate()
+                .map(|(i, x)| window.iter().skip(i + 1).map(move |y| x + y))
+                .flatten()
+                .any(|sum| sum == next_value);
 
             if found {
                 window[index] = next_value;
@@ -66,8 +59,18 @@ impl Day for Day9 {
             }
         }
 
-        let min = values.iter().skip(begin).take(end - begin + 1).min().unwrap();
-        let max = values.iter().skip(begin).take(end - begin + 1).max().unwrap();
+        let min = values
+            .iter()
+            .skip(begin)
+            .take(end - begin + 1)
+            .min()
+            .unwrap();
+        let max = values
+            .iter()
+            .skip(begin)
+            .take(end - begin + 1)
+            .max()
+            .unwrap();
 
         return min + max;
     }
