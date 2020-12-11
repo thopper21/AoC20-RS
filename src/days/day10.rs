@@ -48,7 +48,7 @@ impl Day for Day10 {
                 let size = min(back_trace.len(), i);
                 let next = back_trace
                     .iter()
-                    .zip(adapters[i-size..i].iter().cloned().rev())
+                    .zip(adapters[i - size..i].iter().cloned().rev())
                     .filter(|(_, back_adapter)| adapter - back_adapter <= 3)
                     .map(|(back, _)| back)
                     .sum();
