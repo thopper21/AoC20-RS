@@ -37,7 +37,7 @@ impl Ferry {
             (0, 1),
             (1, -1),
             (1, 0),
-            (1, 1)
+            (1, 1),
         ];
 
         let mut count = 0;
@@ -85,7 +85,7 @@ impl Ferry {
             (0, 1),
             (1, -1),
             (1, 0),
-            (1, 1)
+            (1, 1),
         ];
 
         let mut count = 0;
@@ -145,50 +145,47 @@ fn parse(line: String) -> Vec<Cell> {
 fn run<I, F>(input: I, threshold: usize, count_adj: F) -> usize
 where
     I: Iterator<Item = String>,
-    F: Fn(&Ferry, usize, usize) -> usize {
-        let mut ferry = Ferry {
-            cells: input.map(parse).collect(),
-        };
+    F: Fn(&Ferry, usize, usize) -> usize,
+{
+    let mut ferry = Ferry {
+        cells: input.map(parse).collect(),
+    };
 
-        loop {
-            let mut changes = Vec::<(usize, usize)>::new();
+    loop {
+        let mut changes = Vec::<(usize, usize)>::new();
 
-            for i in 0..ferry.cells.len() {
-                let row = &ferry.cells[i];
-                for j in 0..row.len() {
-                    let cell = &row[j];
-                    let adj =  count_adj(&ferry, i, j);
-                    match cell {
-                        Cell::Empty => {
-                            if adj == 0 {
-                                changes.push((i, j));
-                            }
+        for i in 0..ferry.cells.len() {
+            let row = &ferry.cells[i];
+            for j in 0..row.len() {
+                let cell = &row[j];
+                let adj = count_adj(&ferry, i, j);
+                match cell {
+                    Cell::Empty => {
+                        if adj == 0 {
+                            changes.push((i, j));
                         }
-                        Cell::Occupied => {
-                            if adj >= threshold {
-                                changes.push((i, j));
-                            }
-                        }
-                        _ => {}
                     }
+                    Cell::Occupied => {
+                        if adj >= threshold {
+                            changes.push((i, j));
+                        }
+                    }
+                    _ => {}
                 }
             }
+        }
 
-            if changes.is_empty() {
-                return ferry
-                    .cells
-                    .iter()
-                    .map(|row| {
-                        row.iter()
-                            .filter(|cell| **cell == Cell::Occupied)
-                            .count()
-                    })
-                    .sum();
-            } else {
-                ferry.update(&changes);
-            }
+        if changes.is_empty() {
+            return ferry
+                .cells
+                .iter()
+                .map(|row| row.iter().filter(|cell| **cell == Cell::Occupied).count())
+                .sum();
+        } else {
+            ferry.update(&changes);
         }
     }
+}
 
 impl Day for Day11 {
     type T1 = usize;
