@@ -1,5 +1,7 @@
 use crate::day::Day;
 
+use std::iter::successors;
+
 pub struct Day13;
 
 impl Day for Day13 {
@@ -44,12 +46,8 @@ impl Day for Day13 {
             .filter(|(_, x)| x.is_ok())
             .map(|(i, x)| {
                 let modulo = x.unwrap();
-                let mut curr = modulo;
                 let offset = i as u64;
-                while curr <= offset {
-                    curr += modulo;
-                }
-                ((curr - offset) % modulo, modulo)
+                ((modulo*offset - offset) % modulo, modulo)
             })
             .collect();
 
@@ -57,12 +55,13 @@ impl Day for Day13 {
         buses
             .iter()
             .fold((0, 1), |(value, addend), (target, modulo)| {
-                let mut next = value;
-                while next % modulo != *target {
-                    next += addend;
-                }
-
-                (next, addend * modulo)
+                (
+                    successors(Some(value), |curr| Some(curr + addend))
+                        .filter(|value| value % modulo == *target)
+                        .next()
+                        .unwrap(),
+                    addend * modulo,
+                )
             })
             .0
     }
