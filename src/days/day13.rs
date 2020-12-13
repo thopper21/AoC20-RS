@@ -41,13 +41,12 @@ impl Day for Day13 {
         let bus_list = input.next().unwrap();
         let buses: Vec<(u64, u64)> = bus_list
             .split(',')
-            .map(|s| s.parse::<u64>())
             .enumerate()
-            .filter(|(_, x)| x.is_ok())
-            .map(|(i, x)| {
-                let modulo = x.unwrap();
-                let offset = i as u64;
-                ((modulo*offset - offset) % modulo, modulo)
+            .filter_map(|(i, s)| {
+                s.parse::<u64>().ok().map(|x| {
+                    let offset = i as u64;
+                    ((x * offset - offset) % x, x)
+                })
             })
             .collect();
 
