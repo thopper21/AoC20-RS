@@ -19,6 +19,7 @@ enum Day {
     Eleven,
     Twelve,
     Thirteen,
+    Fourteen,
 }
 
 #[allow(dead_code)]
@@ -53,9 +54,10 @@ fn run(day: Day, part: Part) -> String {
         Day::Eleven => run_day::<day11::Day11>(11, part),
         Day::Twelve => run_day::<day12::Day12>(12, part),
         Day::Thirteen => run_day::<day13::Day13>(13, part),
+        Day::Fourteen => run_day::<day14::Day14>(14, part),
     }
 }
 
 fn main() {
-    println!("{}", run(Day::Thirteen, Part::Two));
+    println!("{}", run(Day::Fourteen, Part::One));
 }
