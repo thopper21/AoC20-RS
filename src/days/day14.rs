@@ -15,7 +15,7 @@ struct Mask {
 }
 
 impl Mask {
-    fn apply(&self, mut val: u64) -> u64 {
+    fn apply_v1(&self, mut val: u64) -> u64 {
         for i in 0..36 {
             match self.bits[i] {
                 TriState::One => val |= 1 << i,
@@ -25,6 +25,26 @@ impl Mask {
         }
 
         val
+    }
+
+    fn apply_v2(&self, val: u64) -> Vec<u64> {
+        let mut result = vec![val];
+        for i in 0..36 {
+            match self.bits[i] {
+                TriState::One => {
+                    result = result.iter().map(|x| x | (1 << i)).collect();
+                }
+                TriState::Unset => {
+                    result = result
+                        .iter()
+                        .flat_map(|x| vec![x | (1 << i), x & !(1 << i)])
+                        .collect();
+                }
+                _ => continue,
+            }
+        }
+
+        result
     }
 
     fn parse(string: &str) -> Mask {
@@ -63,13 +83,26 @@ impl Program {
         }
     }
 
-    fn apply(&mut self, instruction: &Instruction) {
+    fn apply_v1(&mut self, instruction: &Instruction) {
         match instruction {
             Instruction::Mask(mask) => {
                 self.mask = mask.clone();
             }
             Instruction::Mem(address, value) => {
-                self.memory.insert(*address, self.mask.apply(*value));
+                self.memory.insert(*address, self.mask.apply_v1(*value));
+            }
+        }
+    }
+
+    fn apply_v2(&mut self, instruction: &Instruction) {
+        match instruction {
+            Instruction::Mask(mask) => {
+                self.mask = mask.clone();
+            }
+            Instruction::Mem(address, value) => {
+                for mem in self.mask.apply_v2(*address) {
+                    self.memory.insert(mem, *value);
+                }
             }
         }
     }
@@ -84,8 +117,10 @@ fn parse(line: String) -> Instruction {
         let equals = line.find('=').unwrap();
 
         Instruction::Mem(
-            line[(open_bracket+1)..close_bracket].parse::<u64>().unwrap(),
-            line[(equals + 2)..].parse::<u64>().unwrap()
+            line[(open_bracket + 1)..close_bracket]
+                .parse::<u64>()
+                .unwrap(),
+            line[(equals + 2)..].parse::<u64>().unwrap(),
         )
     }
 }
@@ -98,30 +133,30 @@ impl Day for Day14 {
     where
         I: Iterator<Item = String>,
     {
-        // let instructions = vec![
-        //     Instruction::Mask(Mask::parse(
-        //         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X".to_string(),
-        //     )),
-        //     Instruction::Mem(8, 11),
-        //     Instruction::Mem(7, 101),
-        //     Instruction::Mem(8, 0),
-        // ];
         let instructions = input.map(parse);
 
         let mut program = Program::new();
 
         for instruction in instructions {
-            program.apply(&instruction);
+            program.apply_v1(&instruction);
         }
 
         program.memory.values().sum()
     }
 
-    type T2 = usize;
-    fn part2<I>(mut input: I) -> usize
+    type T2 = u64;
+    fn part2<I>(input: I) -> u64
     where
         I: Iterator<Item = String>,
     {
-        input.count()
+        let instructions = input.map(parse);
+
+        let mut program = Program::new();
+
+        for instruction in instructions {
+            program.apply_v2(&instruction);
+        }
+
+        program.memory.values().sum()
     }
 }
