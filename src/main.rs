@@ -61,5 +61,5 @@ fn run(day: Day, part: Part) -> String {
 }
 
 fn main() {
-    println!("{}", run(Day::Fifteen, Part::One));
+    println!("{}", run(Day::Fifteen, Part::Two));
 }
