@@ -143,7 +143,6 @@ impl Day for Day16 {
         I: Iterator<Item = String>,
     {
         let observations = parse(input);
-        // let observations = test_input();
         let num_fields = observations.constraints.len();
         let fields: HashSet<String> = observations.constraints.keys().cloned().collect();
         let mut possibilities = vec![fields; num_fields];
