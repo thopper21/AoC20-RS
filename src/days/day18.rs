@@ -3,144 +3,138 @@ extern crate nom;
 
 use self::nom::branch::alt;
 use self::nom::bytes::complete::tag;
-use self::nom::character::complete::char;
 use self::nom::character::complete::digit1;
 use self::nom::IResult;
 
 pub struct Day18;
 
 // Part1:
-// expr ::= <term> | <term><space><op><space><expr>
-// term ::= <paren> | <digit>
-// paren ::= <open-paren><expr><close-paren>
-// digit ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-// open-paren ::= "("
-// close-paren ::= ")"
-// op ::= "+" | "*"
-// space ::= " "
+// <expr> :: <term> | <term><op><expr>
+// <term> :: <open-paren><expr><close-paren> | <digit>
+// <digit> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+// <open-paren> ::= "("
+// <close-paren> ::= ")"
+// op ::= " + " | " * "
 
-#[derive(Clone, Copy)]
-enum Operation {
-    Plus,
-    Times,
+#[derive(Clone)]
+enum Expr1 {
+    Term(Term1),
+    Plus(Term1, Box<Expr1>),
+    Times(Term1, Box<Expr1>),
+}
+
+fn plus(y: u64) -> impl Fn(u64) -> u64 {
+    move |x| x + y
+}
+
+fn mult(y: u64) -> impl Fn(u64) -> u64 {
+    move |x| x * y
+}
+
+impl Expr1 {
+    fn term(term: Term1) -> Expr1 {
+        Expr1::Term(term)
+    }
+
+    fn plus(term: Term1, expr: Expr1) -> Expr1 {
+        Expr1::Plus(term, Box::new(expr))
+    }
+
+    fn times(term: Term1, expr: Expr1) -> Expr1 {
+        Expr1::Times(term, Box::new(expr))
+    }
+
+    fn evaluate<F>(&self, cont: F) -> u64
+    where
+        F: Fn(u64) -> u64,
+    {
+        match self {
+            Expr1::Term(term) => cont(term.evaluate()),
+            Expr1::Plus(term, expr) => expr.evaluate(plus(cont(term.evaluate()))),
+            Expr1::Times(term, expr) => expr.evaluate(mult(cont(term.evaluate()))),
+        }
+    }
 }
 
 #[derive(Clone)]
-enum Term {
-    Paren(Box<Expression>),
+enum Term1 {
+    Paren(Box<Expr1>),
     Digit(u64),
 }
 
-impl Term {
-    fn paren(expression: Expression) -> Term {
-        Term::Paren(Box::new(expression))
+impl Term1 {
+    fn paren(expr: Expr1) -> Term1 {
+        Term1::Paren(Box::new(expr))
     }
 
-    fn digit(value: u64) -> Term {
-        Term::Digit(value)
+    fn digit(value: u64) -> Term1 {
+        Term1::Digit(value)
     }
 
     fn evaluate(&self) -> u64 {
         match self {
-            Term::Paren(expression) => expression.evaluate(),
-            Term::Digit(value) => *value,
+            Term1::Paren(expr) => expr.evaluate(|x| x),
+            Term1::Digit(value) => *value,
         }
     }
 }
 
-#[derive(Clone)]
-enum Expression {
-    End(Term),
-    Operation(Term, Operation, Box<Expression>),
+fn digit(input: &str) -> IResult<&str, u64> {
+    let (input, digit) = digit1(input)?;
+
+    Ok((input, digit.parse::<u64>().unwrap()))
 }
 
-impl Expression {
-    fn end(term: Term) -> Expression {
-        Expression::End(term)
-    }
+fn term1_digit(input: &str) -> IResult<&str, Term1> {
+    let (input, value) = digit(input)?;
 
-    fn operation(left: Term, op: Operation, right: Expression) -> Expression {
-        Expression::Operation(left, op, Box::new(right))
-    }
-
-    fn evaluate(&self) -> u64 {
-        let eval = |left: &Term, oper: &Operation, right: &Term| match *oper {
-            Operation::Plus => left.evaluate() + right.evaluate(),
-            Operation::Times => left.evaluate() * right.evaluate(),
-        };
-
-        let tail = |left: &Term, oper: &Operation, expr: &Expression| -> u64 {
-            match expr {
-                Expression::End(right) => eval(left, oper, right),
-                Expression::Operation(right, op_next, next) => Expression::Operation(
-                    Term::digit(eval(left, oper, right)),
-                    op_next.clone(),
-                    next.clone(),
-                )
-                .evaluate(),
-            }
-        };
-
-        match self {
-            Expression::End(term) => term.evaluate(),
-            Expression::Operation(left, op, expr) => tail(left, op, &*expr),
-        }
-    }
+    Ok((input, Term1::digit(value)))
 }
 
-fn op(line: &str) -> IResult<&str, Operation> {
-    let (line, _) = tag(" ")(line)?;
-    let (line, op) = alt((char('*'), char('+')))(line)?;
-    let (line, _) = tag(" ")(line)?;
+fn term1_paren(input: &str) -> IResult<&str, Term1> {
+    let (input, _) = tag("(")(input)?;
+    let (input, expr) = expr1(input)?;
+    let (input, _) = tag(")")(input)?;
 
-    Ok((
-        line,
-        match op {
-            '+' => Operation::Plus,
-            '*' => Operation::Times,
-            _ => unreachable!(),
-        },
-    ))
+    Ok((input, Term1::paren(expr)))
 }
 
-fn digit(line: &str) -> IResult<&str, Term> {
-    let (line, digit) = digit1(line)?;
+fn term1(input: &str) -> IResult<&str, Term1> {
+    let (input, term) = alt((term1_paren, term1_digit))(input)?;
 
-    Ok((line, Term::digit(digit.parse::<u64>().unwrap())))
+    Ok((input, term))
 }
 
-fn paren(line: &str) -> IResult<&str, Term> {
-    let (line, _) = tag("(")(line)?;
-    let (line, expr) = expression(line)?;
-    let (line, _) = tag(")")(line)?;
+fn expr1_times(input: &str) -> IResult<&str, Expr1> {
+    let (input, term) = term1(input)?;
+    let (input, _) = tag(" * ")(input)?;
+    let (input, expr) = expr1(input)?;
 
-    Ok((line, Term::paren(expr)))
+    Ok((input, Expr1::times(term, expr)))
 }
 
-fn term(line: &str) -> IResult<&str, Term> {
-    alt((paren, digit))(line)
+fn expr1_plus(input: &str) -> IResult<&str, Expr1> {
+    let (input, term) = term1(input)?;
+    let (input, _) = tag(" + ")(input)?;
+    let (input, expr) = expr1(input)?;
+
+    Ok((input, Expr1::plus(term, expr)))
 }
 
-fn operation(line: &str) -> IResult<&str, Expression> {
-    let (line, left) = term(line)?;
-    let (line, op) = op(line)?;
-    let (line, right) = expression(line)?;
+fn expr1_term(input: &str) -> IResult<&str, Expr1> {
+    let (input, term) = term1(input)?;
 
-    Ok((line, Expression::operation(left, op, right)))
+    Ok((input, Expr1::term(term)))
 }
 
-fn end(line: &str) -> IResult<&str, Expression> {
-    let (line, term) = term(line)?;
+fn expr1(input: &str) -> IResult<&str, Expr1> {
+    let (input, expr) = alt((expr1_times, expr1_plus, expr1_term))(input)?;
 
-    Ok((line, Expression::end(term)))
+    Ok((input, expr))
 }
 
-fn expression(line: &str) -> IResult<&str, Expression> {
-    alt((operation, end))(line)
-}
-
-fn parse1(line: String) -> Expression {
-    expression(&line[..]).unwrap().1
+fn parse1(line: String) -> Expr1 {
+    expr1(&line[..]).unwrap().1
 }
 
 // Part2:
@@ -153,134 +147,134 @@ fn parse1(line: String) -> Expression {
 // <plus> ::= " + "
 // <times> ::= " * "
 
-enum Expr {
-    Factor(Factor),
-    Times(Factor, Box<Expr>),
+enum Expr2 {
+    Factor(Factor2),
+    Times(Factor2, Box<Expr2>),
 }
 
-impl Expr {
-    fn factor(factor: Factor) -> Expr {
-        Expr::Factor(factor)
+impl Expr2 {
+    fn factor(factor: Factor2) -> Expr2 {
+        Expr2::Factor(factor)
     }
 
-    fn times(factor: Factor, expr: Expr) -> Expr {
-        Expr::Times(factor, Box::new(expr))
+    fn times(factor: Factor2, expr: Expr2) -> Expr2 {
+        Expr2::Times(factor, Box::new(expr))
     }
 
     fn evaluate(&self) -> u64 {
         match self {
-            Expr::Factor(factor) => factor.evaluate(),
-            Expr::Times(factor, expr) => factor.evaluate() * expr.evaluate(),
+            Expr2::Factor(factor) => factor.evaluate(),
+            Expr2::Times(factor, expr) => factor.evaluate() * expr.evaluate(),
         }
     }
 }
 
-enum Factor {
-    Term(TermP),
-    Plus(TermP, Box<Factor>),
+enum Factor2 {
+    Term(Term2),
+    Plus(Term2, Box<Factor2>),
 }
 
-impl Factor {
-    fn term(term: TermP) -> Factor {
-        Factor::Term(term)
+impl Factor2 {
+    fn term(term: Term2) -> Factor2 {
+        Factor2::Term(term)
     }
 
-    fn plus(term: TermP, factor: Factor) -> Factor {
-        Factor::Plus(term, Box::new(factor))
+    fn plus(term: Term2, factor: Factor2) -> Factor2 {
+        Factor2::Plus(term, Box::new(factor))
     }
 
     fn evaluate(&self) -> u64 {
         match self {
-            Factor::Term(term) => term.evaluate(),
-            Factor::Plus(term, factor) => term.evaluate() + factor.evaluate(),
+            Factor2::Term(term) => term.evaluate(),
+            Factor2::Plus(term, factor) => term.evaluate() + factor.evaluate(),
         }
     }
 }
 
-enum TermP {
-    Paren(Box<Expr>),
+enum Term2 {
+    Paren(Box<Expr2>),
     Digit(u64),
 }
 
-impl TermP {
-    fn paren(expr: Expr) -> TermP {
-        TermP::Paren(Box::new(expr))
+impl Term2 {
+    fn paren(expr: Expr2) -> Term2 {
+        Term2::Paren(Box::new(expr))
     }
 
-    fn digit(value: u64) -> TermP {
-        TermP::Digit(value)
+    fn digit(value: u64) -> Term2 {
+        Term2::Digit(value)
     }
 
     fn evaluate(&self) -> u64 {
         match self {
-            TermP::Paren(expr) => expr.evaluate(),
-            TermP::Digit(value) => *value,
+            Term2::Paren(expr) => expr.evaluate(),
+            Term2::Digit(value) => *value,
         }
     }
 }
 
-fn parse_term_paren(input: &str) -> IResult<&str, TermP> {
+fn term2_paren(input: &str) -> IResult<&str, Term2> {
     let (input, _) = tag("(")(input)?;
-    let (input, expr) = parse_expr(input)?;
+    let (input, expr) = expr2(input)?;
     let (input, _) = tag(")")(input)?;
 
-    Ok((input, TermP::paren(expr)))
+    Ok((input, Term2::paren(expr)))
 }
 
-fn parse_term_digit(input: &str) -> IResult<&str, TermP> {
-    let (input, digit) = digit1(input)?;
+fn term2_digit(input: &str) -> IResult<&str, Term2> {
+    let (input, value) = digit(input)?;
 
-    Ok((input, TermP::digit(digit.parse::<u64>().unwrap())))
+    Ok((input, Term2::digit(value)))
 }
 
-fn parse_term(input: &str) -> IResult<&str, TermP> {
-    let (input, term) = alt((parse_term_paren, parse_term_digit))(input)?;
+fn term2(input: &str) -> IResult<&str, Term2> {
+    let (input, term) = alt((term2_paren, term2_digit))(input)?;
 
     Ok((input, term))
 }
 
-fn parse_factor_term(input: &str) -> IResult<&str, Factor> {
-    let (input, term) = parse_term(input)?;
+fn factor2_term(input: &str) -> IResult<&str, Factor2> {
+    let (input, term) = term2(input)?;
 
-    Ok((input, Factor::term(term)))
+    Ok((input, Factor2::term(term)))
 }
 
-fn parse_factor_plus(input: &str) -> IResult<&str, Factor> {
-    let (input, term) = parse_term(input)?;
+fn factor2_plus(input: &str) -> IResult<&str, Factor2> {
+    let (input, term) = term2(input)?;
     let (input, _) = tag(" + ")(input)?;
-    let (input, factor) = parse_factor(input)?;
+    let (input, factor) = factor2(input)?;
 
-    Ok((input, Factor::plus(term, factor)))
+    Ok((input, Factor2::plus(term, factor)))
 }
 
-fn parse_factor(input: &str) -> IResult<&str, Factor> {
-    let (input, factor) = alt((parse_factor_plus, parse_factor_term))(input)?;
+fn factor2(input: &str) -> IResult<&str, Factor2> {
+    let (input, factor) = alt((factor2_plus, factor2_term))(input)?;
 
     Ok((input, factor))
-} 
-
-fn parse_expr_factor(input: &str) -> IResult<&str, Expr> {
-    let (input, factor) = parse_factor(input)?;
-
-    Ok((input, Expr::factor(factor)))
 }
 
-fn parse_expr_times(input: &str) -> IResult<&str, Expr> {
-    let (input, factor) = parse_factor(input)?;
+fn expr2_factor(input: &str) -> IResult<&str, Expr2> {
+    let (input, factor) = factor2(input)?;
+
+    Ok((input, Expr2::factor(factor)))
+}
+
+fn expr2_times(input: &str) -> IResult<&str, Expr2> {
+    let (input, factor) = factor2(input)?;
     let (input, _) = tag(" * ")(input)?;
-    let (input, expr) = parse_expr(input)?;
+    let (input, expr) = expr2(input)?;
 
-    Ok((input, Expr::times(factor, expr)))
+    Ok((input, Expr2::times(factor, expr)))
 }
 
-fn parse_expr(input: &str) -> IResult<&str, Expr> {
-    let (input, expr) = alt((parse_expr_times, parse_expr_factor))(input)?;
+fn expr2(input: &str) -> IResult<&str, Expr2> {
+    let (input, expr) = alt((expr2_times, expr2_factor))(input)?;
 
     Ok((input, expr))
 }
 
-fn parse2(line: String) -> Expr {
-    parse_expr(&line[..]).unwrap().1
+fn parse2(line: String) -> Expr2 {
+    expr2(&line[..]).unwrap().1
 }
 
 impl Day for Day18 {
@@ -289,7 +283,7 @@ impl Day for Day18 {
     where
         I: Iterator<Item = String>,
     {
-        input.map(|line| parse1(line).evaluate()).sum()
+        input.map(|line| parse1(line).evaluate(|x| x)).sum()
     }
 
     type T2 = u64;
@@ -297,8 +291,6 @@ impl Day for Day18 {
     where
         I: Iterator<Item = String>,
     {
-        input.map(|line| {
-            parse2(line).evaluate()
-        }).sum()
+        input.map(|line| parse2(line).evaluate()).sum()
     }
 }
