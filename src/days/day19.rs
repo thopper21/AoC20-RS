@@ -187,17 +187,17 @@ impl Day for Day19 {
             ),
         );
 
-        match x.rules.eval("babbbbaabbbbbabbbbbbaabaaabaaa", 0) {
-            Some(remainder) => {
-                println!("Success: {}", remainder)
-            }
-            None => {
-                println!("Fail");
-            }
-        }
+        // match x.rules.eval("babbbbaabbbbbabbbbbbaabaaabaaa", 0) {
+        //     Some(remainder) => {
+        //         println!("Success: {}", remainder)
+        //     }
+        //     None => {
+        //         println!("Fail");
+        //     }
+        // }
 
-        42
+        // 42
 
-        // x.count_valid()
+        x.count_valid()
     }
 }
