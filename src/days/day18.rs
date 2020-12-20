@@ -16,7 +16,6 @@ pub struct Day18;
 // <close-paren> ::= ")"
 // op ::= " + " | " * "
 
-#[derive(Clone)]
 enum Expr1 {
     Term(Term1),
     Plus(Term1, Box<Expr1>),
@@ -56,7 +55,6 @@ impl Expr1 {
     }
 }
 
-#[derive(Clone)]
 enum Term1 {
     Paren(Box<Expr1>),
     Digit(u64),
